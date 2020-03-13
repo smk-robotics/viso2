@@ -1,0 +1,23 @@
+<launch>
+  <node pkg="viso2_ros" type="stereo_odometer" name="stereo_odometer" output="screen" respawn="true">
+	<!-- Load file with parameters -->
+  	<rosparam file="$(find viso2_ros)/cfg/stereo_odometer_params.yaml" command="load"/>
+    	<remap from="image" to="image_rect"/>
+    
+	<!-- param name="sensor_frame_id" value="stereo"/ -->
+    	<!-- param name="publish_tf" value="false"/ -->
+    	<!-- param name="odom_frame_id" value="odom"/ -->
+    	<!-- param name="base_link_frame_id" value="base_link"/ -->
+    	<!-- param name="approximate_sync" value="true"/ -->    
+    <!-- param name="queue_size" value="5"/ -->
+    <!-- param name="max_features" value="2"/ -->
+    <!-- param name="bucket_width" value="25.0"/ -->
+    <!-- param name="bucket_height" value="25.0"/ -->
+    <!-- param name="outlier_disp_tolerance" value="10.0"/ -->
+    <!-- param name="outlier_flow_tolerance" value="1.0"/ -->
+    <!-- param name="ref_frame_change_method" value="0"/ -->
+    	<!-- param name="inlier_threshold" value="0.5"/ --> 
+    <!-- param name="match_disp_tolerance" value="5"/ -->
+  </node>
+
+</launch>

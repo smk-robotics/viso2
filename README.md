@@ -1,7 +1,6 @@
-viso2
+Modified viso2 library for Jetson TK-1
 ==========
-ROS Stack containing a wrapper for libviso2, a visual odometry library. 
-http://www.ros.org/wiki/viso2 for the list of contained packages.
+Based on vanilla viso2 library for ROS Kinetic - http://www.ros.org/wiki/viso2
 ***
 
 ## Omnidirectional version

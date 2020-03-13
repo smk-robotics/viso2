@@ -13,6 +13,9 @@
 #include "odometer_base.h"
 #include "odometry_params.h"
 
+#include <dynamic_reconfigure/server.h>   // 13.11.19. Kirill.
+#include <viso2_ros/dynamic_paramsConfig.h> // 13.11.19. Kirill.
+
 // to remove after debugging
 #include <opencv2/highgui/highgui.hpp>
 
@@ -42,7 +45,6 @@ static const boost::array<double, 36> BAD_COVARIANCE =
     0, 0, 0, 0, 9999, 0,
     0, 0, 0, 0, 0, 9999 } };
 
-
 class StereoOdometer : public StereoProcessor, public OdometerBase
 {
 
@@ -63,6 +65,10 @@ private:
   int ref_frame_inlier_threshold_; // method 2. Change the reference frame if the number of inliers is low
   Matrix reference_motion_;
 
+  dynamic_reconfigure::Server<viso2_ros::dynamic_paramsConfig> _dynamic_params_server;                   // 13.11.19. Kirill.
+  dynamic_reconfigure::Server<viso2_ros::dynamic_paramsConfig>::CallbackType _dynamic_params_callback; // 13.11.19. Kirill.
+  void dynamicParamsCallback(viso2_ros::dynamic_paramsConfig &config, uint32_t level); // 13.11.19. Kirill.
+
 public:
 
   typedef pcl::PointCloud<pcl::PointXYZRGB> PointCloud;
@@ -71,6 +77,9 @@ public:
     StereoProcessor(transport), OdometerBase(),
     got_lost_(false), change_reference_frame_(false)
   {
+    _dynamic_params_callback = boost::bind(&StereoOdometer::dynamicParamsCallback,this,_1, _2);
+    _dynamic_params_server.setCallback(_dynamic_params_callback);
+
     // Read local parameters
     ros::NodeHandle local_nh("~");
     odometry_params::loadParams(local_nh, visual_odometer_params_);
@@ -328,9 +337,40 @@ protected:
 
 } // end of namespace
 
+void viso2_ros::StereoOdometer::dynamicParamsCallback(viso2_ros::dynamic_paramsConfig &config, uint32_t level) {
+  if (config.apply_bucketing_parameters) {
+    ROS_INFO_STREAM("[stereo_odometer] - Apply bucketing parameters");
+    visual_odometer_params_.bucket.max_features = config.max_features;
+    visual_odometer_params_.bucket.bucket_width = config.bucket_width;
+    visual_odometer_params_.bucket.bucket_height = config.bucket_height;
+  }
 
-int main(int argc, char **argv)
-{
+  if (config.apply_matcher_parameters) {
+    ROS_INFO_STREAM("[stereo_odometer] - Apply matcher parameters");
+    visual_odometer_params_.match.nms_n = config.nms_n;
+    visual_odometer_params_.match.nms_tau = config.nms_tau;
+    visual_odometer_params_.match.match_binsize = config.match_binsize;
+    visual_odometer_params_.match.match_radius = config.match_radius;
+    visual_odometer_params_.match.match_disp_tolerance = config.match_disp_tolerance;
+    visual_odometer_params_.match.outlier_disp_tolerance = config.outlier_disp_tolerance;
+    visual_odometer_params_.match.outlier_flow_tolerance = config.outlier_flow_tolerance;
+    visual_odometer_params_.match.multi_stage = config.multi_stage;
+    visual_odometer_params_.match.half_resolution = config.half_resolution;
+    visual_odometer_params_.match.refinement = config.refinement;
+  }
+
+  if (config.apply_stereo_odometer_parameters) {
+    ROS_INFO_STREAM("[stereo_odometer] - Apply stereo odometer parameters");
+    visual_odometer_params_.ransac_iters = config.ransac_iters;
+    visual_odometer_params_.inlier_threshold = config.inlier_threshold;
+    visual_odometer_params_.reweighting = config.reweighting;
+    ref_frame_change_method_ = config.ref_frame_change_method;
+    ref_frame_motion_threshold_ = config.ref_frame_motion_threshold;
+    ref_frame_inlier_threshold_ = config.ref_frame_inlier_threshold;
+  }
+}
+
+int main(int argc, char **argv) {
   ros::init(argc, argv, "stereo_odometer");
   if (ros::names::remap("stereo") == "stereo") {
     ROS_WARN("'stereo' has not been remapped! Example command-line usage:\n"
@@ -348,4 +388,3 @@ int main(int argc, char **argv)
   ros::spin();
   return 0;
 }
-

@@ -14,28 +14,33 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_ros
   std_srvs
   message_generation
+  dynamic_reconfigure
 )
 
 find_package(OpenCV REQUIRED)
 find_package(PCL REQUIRED)
 
-option(ARM_CROSS_COMPILATION "ARM Cross Compilation" OFF)
-
-add_message_files( DIRECTORY msg FILES VisoInfo.msg)
+add_message_files(DIRECTORY msg FILES VisoInfo.msg)
 
 generate_messages(
   DEPENDENCIES
     std_msgs
 )
 
+generate_dynamic_reconfigure_options(
+  cfg/dynamic_params.cfg
+)
+
 catkin_package()
 
-if(ARM_CROSS_COMPILATION)
+IF (${CMAKE_SYSTEM_PROCESSOR} MATCHES "armv7l")
+  MESSAGE(STATUS "Detected ${CMAKE_SYSTEM_PROCESSOR} architecture")
+  MESSAGE(STATUS "ARM CROSS COMPILATION - [ACTIVATED]")
   SET(CMAKE_SYSTEM_PROCESSOR arm)
   SET(CMAKE_CXX_FLAGS -mfpu=neon)
-else(ARM_CROSS_COMPILATION)
+ELSE (${CMAKE_SYSTEM_PROCESSOR} MATCHES "armv7l")
   add_definitions(-msse3)
-endif(ARM_CROSS_COMPILATION)
+ENDIF (${CMAKE_SYSTEM_PROCESSOR} MATCHES "armv7l")
 
 include_directories(src ${libviso2_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 
@@ -43,6 +48,7 @@ add_executable(stereo_odometer
   src/stereo_odometer.cpp)
 add_dependencies(stereo_odometer ${catkin_EXPORTED_TARGETS})
 add_dependencies(stereo_odometer ${PROJECT_NAME}_gencpp)
+add_dependencies(stereo_odometer ${PROJECT_NAME}_gencfg)
 
 add_executable(mono_odometer
   src/mono_odometer.cpp)

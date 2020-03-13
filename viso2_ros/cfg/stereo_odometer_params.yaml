@@ -1,0 +1,38 @@
+# Tf PARAMETERS
+odom_frame_id: odom             # Name of the world-fixed frame where the odometer lives (string, default: /odom).
+base_link_frame_id: base_link   # Name of the moving frame whose pose the odometer should report (string, default: /base_link).
+sensor_frame_id: stereo         # Fallback sensor frame id. If the incoming camera info topic does not carry a frame id, this frame id will be used (string, default: "/camera").
+publish_tf: false               # If true, the odometer publishes tf's (bool, default: true).
+
+# BUCKETING PARAMETERS
+max_features: 2                 # Maximum number of features per bucket (int, default: 2).
+bucket_width: 50.0              # Width of the bucket (double, default: 50.0).
+bucket_height: 50.0             # Height of the bucket (double, default: 50.0).
+
+# MATCHER PARAMETERS
+nms_n: 3                        # Minimum distance between maxima in pixels for non-maxima-suppression (int, default: 3).
+nms_tau: 50                     # Interest point peakiness threshold (int, default: 50).
+match_binsize: 50               # Matching width/height. Affects efficiency only (int, default: 50).
+match_radius: 200               # Matching radius - du/dv in pixels (int, default: 200).
+match_disp_tolerance: 2         # dv tolerance for stereo matches. In pixels (int, default: 2).
+outlier_disp_tolerance: 10      # Disparity tolerance for outlier removal. In pixels (int, default: 5).
+outlier_flow_tolerance: 5       # Flow tolerance for outlier removal. In pixels (int, default: 5).
+multi_stage: 1                  # 0=disabled, 1=multistage matching -> denser and faster (int, default: 1).
+half_resolution: 1              # 0=disabled, 1=match at half resolution, refine at full resolution (int, default: 1).
+refinement: 1                   # 0=none, 1=pixel, 2=subpixel (int, default: 1).
+
+# STEREO ODOMETER PARAMETERS
+queue_size: 5                   # Length of the input queues for left and right camera synchronization (int, default: 5).
+approximate_sync: true          # Approximate synchronization of incoming messages, set to true if cameras do not have synchronized timestamps (bool, default: false).
+ransac_iters: 200               # Number of RANSAC iterations (int, default: 200).
+inlier_threshold: 0.5           # Fundamental matrix inlier threshold (double, default: 1.5).
+reweighting: true               # Lower border weights. More robust to calibration errors (bool, default: true).
+ref_frame_change_method: 0      # Defines the method of reference frame change for drift compensation (int, default: 0).
+                                # 0 - means reference frame is changed for every algorithm iteration.
+                                # 1 - changes the reference frame if last motion is small (ref_frame_motion_threshold param).
+                                # 2 - changes the reference frame if the number of inliers is smaller than ref_frame_inlier_threshold param.
+ref_frame_motion_threshold: 5.0 # If the mean movement in pixels of all features lies below this threshold,
+                                # the reference image inside the odometer will not be changed (double, default: 5.0).
+ref_frame_inlier_threshold: 150 # If the number of inliers between current frame and reference frame is smaller than this threshold,
+                                # the reference image inside the odometer will be changed ((int, default: 150).
+
